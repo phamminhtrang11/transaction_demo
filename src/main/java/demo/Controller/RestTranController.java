@@ -43,20 +43,17 @@ public class RestTranController {
 
     @PostMapping(value = "/transaction")
     @ResponseBody
-    public String displayTran(@RequestBody Transaction transaction) {
+    public String displayTran() {
         String apiUrl = "http://localhost:8080/api/transaction";
         Gson gson = new Gson();
-        String json = gson.toJson(transaction);
-
-        System.out.println("Request JSON: " + json);
 
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<String> entity = new HttpEntity<>(json, headers);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
 
             // Make the API call
-            String response = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, String.class).getBody();
+            String response = restTemplate.getForObject(apiUrl, String.class);
             return response;
         } catch (Exception e) {
             // Log the exception and return an error message

@@ -7,7 +7,7 @@
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body ng-app="myApp" ng-controller="myController" ng-init="init()">
 <div class="container mt-5">
     <div class="card">
         <div class="card-header text-center">
@@ -16,23 +16,16 @@
         <div class="card-body">
             <p class="lead">Transaction Details:</p>
             <table class="table table-bordered">
-                <tbody>
+                <thead>
                 <tr>
                     <th>ID</th>
-                    <td>${transaction.id}</td>
-                </tr>
-                <tr>
                     <th>Amount</th>
-                    <td>${transaction.amount}</td>
-                </tr>
-                <tr>
                     <th>Description</th>
-                    <td>${transaction.description}</td>
-                </tr>
-                <tr>
                     <th>Date</th>
-                    <td>${transaction.transactionDate}</td>
                 </tr>
+                </thead>
+                <tbody id="rs">
+
                 </tbody>
             </table>
         </div>
@@ -41,7 +34,39 @@
         </div>
     </div>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+<script>
+    var app = angular.module('myApp', []);
+    app.controller('myController', function($scope, $http) {
+        $scope.init = function() {
+            $scope.redirectToSuccess();
+        };
 
+        $scope.redirectToSuccess = function() {
+            $http.post('/transaction').then(function(response) {
+                console.log(response)
+                let data = JSON.parse(response.data).success
+                if (data) {
+                if (Array.isArray(data) && data.length > 0) {
+                    let body = "";
+                    data.forEach(item => {
+                        body += "<tr>";
+                        body += "<td>" + item.id + "</td>";
+                        body += "<td>" + item.amount + "</td>";
+                        body += "<td>" + item.description + "</td>";
+                        body += "<td>" + new Date(item.transactionDate).toLocaleDateString() + "</td>";
+                        body += "</tr>";
+                    });
+                    document.getElementById("rs").innerHTML = body;
+                } else {
+                    console.error('Invalid response:', data);
+                }}
+            }).catch(function(error) {
+                console.error('Error:', error);
+            });
+        };
+    });
+</script>
 <!-- Bootstrap JS and dependencies (optional) -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
