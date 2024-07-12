@@ -1,8 +1,7 @@
 package demo.Controller;
 
-
 import com.google.gson.Gson;
-import demo.TranEntity.Transaction;
+import demo.TranEntity.SearchReq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -13,15 +12,16 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-@RestController
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+@RestController
 public class RestTranController {
     @Autowired
     @Qualifier("restTemplate")
@@ -45,15 +45,13 @@ public class RestTranController {
     @ResponseBody
     public String displayTran() {
         String apiUrl = "http://localhost:8080/api/transaction";
-        Gson gson = new Gson();
-
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             // Make the API call
-            String response = restTemplate.getForObject(apiUrl, String.class);
+            String response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class).getBody();
             return response;
         } catch (Exception e) {
             // Log the exception and return an error message
@@ -61,4 +59,33 @@ public class RestTranController {
             return "Error: " + e.getMessage();
         }
     }
+
+    @PostMapping(value = "/transaction/search")
+    @ResponseBody
+    public String search(@RequestBody SearchReq req) {
+        try {
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("minAmount", req.getMinAmount());
+            requestBody.put("maxAmount", req.getMaxAmount());
+            requestBody.put("minDate", req.getMinDate());
+            requestBody.put("maxDate", req.getMaxDate());
+            requestBody.put("description", req.getDescription());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            // Make the API call
+            String apiUrl = "http://localhost:8080/api/transaction/search";
+            String response = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, String.class).getBody();
+            return response;
+        } catch (Exception e) {
+            // Log the exception and return an error message
+            e.printStackTrace();
+            return "Error: " + e.getMessage();
+        }
+    }
+
 }
+

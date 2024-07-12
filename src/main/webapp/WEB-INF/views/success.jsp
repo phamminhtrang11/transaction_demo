@@ -6,12 +6,16 @@
     <title>Transaction Success</title>
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body ng-app="myApp" ng-controller="myController" ng-init="init()">
 <div class="container mt-5">
     <div class="card">
         <div class="card-header text-center">
             <h1>Transaction Successful!</h1>
+
+            <i class="fas fa-search" ng-click="redirectToSearch()" style="cursor: pointer; float: right;"></i>
         </div>
         <div class="card-body">
             <p class="lead">Transaction Details:</p>
@@ -47,23 +51,27 @@
                 console.log(response)
                 let data = JSON.parse(response.data).success
                 if (data) {
-                if (Array.isArray(data) && data.length > 0) {
-                    let body = "";
-                    data.forEach(item => {
-                        body += "<tr>";
-                        body += "<td>" + item.id + "</td>";
-                        body += "<td>" + item.amount + "</td>";
-                        body += "<td>" + item.description + "</td>";
-                        body += "<td>" + new Date(item.transactionDate).toLocaleDateString() + "</td>";
-                        body += "</tr>";
-                    });
-                    document.getElementById("rs").innerHTML = body;
-                } else {
-                    console.error('Invalid response:', data);
-                }}
+                    if (Array.isArray(data) && data.length > 0) {
+                        let body = "";
+                        data.forEach(item => {
+                            body += "<tr>";
+                            body += "<td>" + item.id + "</td>";
+                            body += "<td>" + item.amount + "</td>";
+                            body += "<td>" + item.description + "</td>";
+                            body += "<td>" + new Date(item.transactionDate).toLocaleDateString() + "</td>";
+                            body += "</tr>";
+                        });
+                        document.getElementById("rs").innerHTML = body;
+                    } else {
+                        console.error('Invalid response:', data);
+                    }}
             }).catch(function(error) {
                 console.error('Error:', error);
             });
+        };
+
+        $scope.redirectToSearch = function() {
+            window.location.href = 'search';
         };
     });
 </script>
