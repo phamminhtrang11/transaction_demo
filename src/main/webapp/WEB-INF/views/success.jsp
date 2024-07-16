@@ -34,9 +34,7 @@
                 <button class="btn btn-secondary" ng-click="nextPage()">Next</button>
             </div>
         </div>
-        <div class="card-footer text-center">
-            <a href="/" class="btn btn-primary">Go to Home</a>
-        </div>
+
     </div>
 </div>
 
