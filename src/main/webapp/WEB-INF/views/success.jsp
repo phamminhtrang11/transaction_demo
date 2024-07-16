@@ -14,7 +14,6 @@
     <div class="card">
         <div class="card-header text-center">
             <h1>Transaction Successful!</h1>
-
             <i class="fas fa-search" ng-click="redirectToSearch()" style="cursor: pointer; float: right;"></i>
         </div>
         <div class="card-body">
@@ -28,28 +27,37 @@
                     <th>Date</th>
                 </tr>
                 </thead>
-                <tbody id="rs">
-
-                </tbody>
+                <tbody id="rs"></tbody>
             </table>
+            <div class="text-center">
+                <button class="btn btn-secondary" ng-click="previousPage()" ng-disabled="currentPage === 0">Previous</button>
+                <button class="btn btn-secondary" ng-click="nextPage()">Next</button>
+            </div>
         </div>
         <div class="card-footer text-center">
             <a href="/" class="btn btn-primary">Go to Home</a>
         </div>
     </div>
 </div>
+
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 <script>
     var app = angular.module('myApp', []);
     app.controller('myController', function($scope, $http) {
+        $scope.currentPage = 0;
+        $scope.pageSize = 5;
+
         $scope.init = function() {
-            $scope.redirectToSuccess();
+            $scope.loadTransactions();
         };
 
-        $scope.redirectToSuccess = function() {
-            $http.post('/transaction').then(function(response) {
-                console.log(response)
-                let data = JSON.parse(response.data).success
+        $scope.loadTransactions = function() {
+            $http.post('/transaction', {
+                page: $scope.currentPage,
+                size: $scope.pageSize
+            }).then(function(response) {
+                console.log('Full Response:', response);
+                let data = response.data.success;
                 if (data) {
                     if (Array.isArray(data) && data.length > 0) {
                         let body = "";
@@ -63,11 +71,27 @@
                         });
                         document.getElementById("rs").innerHTML = body;
                     } else {
-                        console.error('Invalid response:', data);
-                    }}
+                        document.getElementById("rs").innerHTML = "<tr><td colspan='4'>No transactions found.</td></tr>";
+                    }
+                } else {
+                    console.error('Invalid response:', data);
+                }
             }).catch(function(error) {
                 console.error('Error:', error);
             });
+        };
+
+
+        $scope.previousPage = function() {
+            if ($scope.currentPage > 0) {
+                $scope.currentPage--;
+                $scope.loadTransactions();
+            }
+        };
+
+        $scope.nextPage = function() {
+            $scope.currentPage++;
+            $scope.loadTransactions();
         };
 
         $scope.redirectToSearch = function() {

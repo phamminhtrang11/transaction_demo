@@ -8,6 +8,8 @@ import java.util.Date;
 @Getter
 @Setter
 public class SearchReq {
+    private int page;
+    private int size;
     private String minAmount;
     private String maxAmount;
     private Date minDate;

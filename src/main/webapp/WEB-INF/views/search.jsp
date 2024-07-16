@@ -41,6 +41,10 @@
 
                 </tbody>
             </table>
+            <div class="text-center">
+                <button class="btn btn-secondary" ng-click="previousPage()" ng-disabled="currentPage === 0">Previous</button>
+                <button class="btn btn-secondary" ng-click="nextPage()">Next</button>
+            </div>
         </div>
         <div class="card-footer text-center">
             <a href="/" class="btn btn-primary">Go to Home</a>
@@ -52,56 +56,59 @@
 <script>
     var app = angular.module('myApp', []);
     app.controller('myController', function($scope, $http) {
+        $scope.currentPage = 0;
+        $scope.pageSize = 10;
+
         $scope.searchAll = function() {
-            // $scope.searchByDescription();
-            // $scope.searchByAmount();
-            // $scope.searchByDate();
-
-
             var req = {
-                minAmount:  $scope.minAmount,
+                minAmount: $scope.minAmount,
                 maxAmount: $scope.maxAmount,
                 description: $scope.description,
                 minDate: $scope.minDate,
                 maxDate: $scope.maxDate,
-            }
-            $http.post('/transaction/search', req)
-                .then(function(response) {
-                    console.log(response);
-                    if (response.status == 200) {
-                        let jsonData = JSON.parse(response.data)
-                        let data = jsonData.success;
-                        if (data) {
-                            var body = "";
-                            if (Array.isArray(data) && data.length > 0) {
-                                data.forEach(function (item) {
-                                    body += "<tr>";
-                                    body += "<td>" + item.id + "</td>";
-                                    body += "<td>" + item.amount + "</td>";
-                                    body += "<td>" + item.description + "</td>";
-                                    body += "<td>" + new Date(item.transactionDate).toLocaleDateString() + "</td>";
-                                    body += "</tr>";
-                                });
-                            } else {
-                                console.error('Invalid response:', data);
-                            }
-                            document.getElementById("rs").innerHTML = body;
-                        }
-                    } else {
-                        console.error('Invalid response:', data);
-                    }
+                page: $scope.currentPage,
+                size: $scope.pageSize
+            };
 
+
+        $http.post('/transaction/search', req)
+                .then(function(response) {
+                    let jsonData = response.data;
+                    let data = jsonData.success;
+                    if (data) {
+                        var body = "";
+                        if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(function (item) {
+                                body += "<tr>";
+                                body += "<td>" + item.id + "</td>";
+                                body += "<td>" + item.amount + "</td>";
+                                body += "<td>" + item.description + "</td>";
+                                body += "<td>" + new Date(item.transactionDate).toLocaleDateString() + "</td>";
+                                body += "</tr>";
+                            });
+                        } else {
+                            console.error('Invalid response:', data);
+                        }
+                        document.getElementById("rs").innerHTML = body;
+                    }
                 })
                 .catch(function(error) {
                     console.error('Error:', error);
                 });
         };
+
+        $scope.previousPage = function() {
+            if ($scope.currentPage > 0) {
+                $scope.currentPage--;
+                $scope.searchAll();
+            }
+        };
+
+        $scope.nextPage = function() {
+            $scope.currentPage++;
+            $scope.searchAll();
+        };
     });
 </script>
-<!-- Bootstrap JS and dependencies (optional) -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 </body>
 </html>
