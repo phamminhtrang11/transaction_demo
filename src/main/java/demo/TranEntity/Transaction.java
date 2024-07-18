@@ -10,12 +10,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 
+@Getter
+@Setter
 public class Transaction {
-    @Getter
-    @Setter
     private Long id;
-
-    private String amount;
+    private Long amount;
     private String description;
     private Date transactionDate;
 

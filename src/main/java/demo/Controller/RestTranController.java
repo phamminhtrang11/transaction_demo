@@ -2,6 +2,7 @@ package demo.Controller;
 
 import com.google.gson.Gson;
 import demo.TranEntity.SearchReq;
+import demo.TranEntity.Transaction;
 import demo.TranEntity.TransactionRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -59,7 +60,61 @@ public class RestTranController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
         }
     }
+    @PostMapping(value = "/transaction/add")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addTransaction(@RequestBody Transaction request) {
+        String apiUrl = "http://localhost:8080/api/transaction";
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Transaction> entity = new HttpEntity<>(request, headers);
 
+            String response = restTemplate.postForObject(apiUrl, entity, String.class);
+            Map<String, Object> responseData = new Gson().fromJson(response, Map.class);
+
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
+    }
+    @PutMapping(value = "/transaction/update/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateTransaction(@PathVariable Long id, @RequestBody Transaction request) {
+        String apiUrl = "http://localhost:8080/api/transaction/" + id;
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Transaction> entity = new HttpEntity<>(request, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.PUT, entity, String.class);
+            Map<String, Object> responseData = new Gson().fromJson(response.getBody(), Map.class);
+
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping(value = "/transaction/delete/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteTransaction(@PathVariable("id") Long id) {
+        String apiUrl = "http://localhost:8080/api/transaction/" + id;
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.DELETE, entity, String.class);
+            Map<String, Object> responseData = new Gson().fromJson(response.getBody(), Map.class);
+
+            return ResponseEntity.ok(responseData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
+    }
 
     @PostMapping(value = "/transaction/search")
     @ResponseBody
