@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transaction Success</title>
-    <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body ng-app="myApp" ng-controller="myController" ng-init="init()">
@@ -41,6 +39,25 @@
                 </tr>
                 </tbody>
             </table>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" ng-class="{'disabled': currentPage === 0}">
+                        <a class="page-link" href="#" ng-click="previousPage()" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                    </li>
+                    <li class="page-item" ng-repeat="page in getPageArray()" ng-class="{'active': currentPage === page}">
+                        <a class="page-link" href="#" ng-click="goToPage(page)">{{page + 1}}</a>
+                    </li>
+                    <li class="page-item" ng-class="{'disabled': currentPage === totalPages - 1}">
+                        <a class="page-link" href="#" ng-click="nextPage()" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
             <div class="text-center">
                 <button class="btn btn-secondary" ng-click="previousPage()" ng-disabled="currentPage === 0">Previous</button>
                 <button class="btn btn-secondary" ng-click="nextPage()">Next</button>
@@ -120,18 +137,17 @@
     </div>
 </div>
 
-<!-- jQuery and Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<!-- AngularJS -->
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 
-<!-- AngularJS Script -->
 <script>
     var app = angular.module('myApp', []);
     app.controller('myController', function($scope, $http) {
         $scope.currentPage = 0;
         $scope.pageSize = 5;
+        $scope.totalItems = 0;
+        $scope.totalPages = 0;
         $scope.newTransaction = {};
         $scope.selectedTransaction = {};
         $scope.listData = [];
@@ -145,9 +161,16 @@
                 page: $scope.currentPage,
                 size: $scope.pageSize
             }).then(function(response) {
+                console.log('Server response:', response.data);
                 let data = response.data.success;
+                console.log('Data:', data);
                 if (data) {
                     $scope.listData = data;
+                    $scope.totalItems = response.data.totalItems;
+                    $scope.totalPages = Math.ceil($scope.totalItems / $scope.pageSize);
+                    console.log('List data:', $scope.listData);
+                    console.log('Total items:', $scope.totalItems);
+                    console.log('Total pages:', $scope.totalPages);
                 } else {
                     console.error('Invalid response:', data);
                 }
@@ -156,13 +179,47 @@
             });
         };
 
+        $scope.goToPage = function(page) {
+            $scope.currentPage = page;
+            $scope.loadTransactions();
+        };
+
+        $scope.getPageArray = function() {
+            var totalPages = $scope.totalPages;
+            var currentPage = $scope.currentPage;
+            var delta = 2;
+            var range = [];
+
+            // Generate range for page numbers
+            for (var i = Math.max(0, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+                range.push(i);
+            }
+
+            // Add leading ellipsis if there are skipped pages before the start of the range
+            if (range[0] > 0) {
+                if (range[0] > 1) {
+                    range.unshift('...');
+                }
+                range.unshift(0);
+            }
+
+            // Add trailing ellipsis if there are skipped pages after the end of the range
+            if (range[range.length - 1] < totalPages - 1) {
+                if (range[range.length - 2] < totalPages - 2) {
+                    range.push('...');
+                }
+                range.push(totalPages - 1);
+            }
+
+            return range;
+        };
+
         $scope.previousPage = function() {
             if ($scope.currentPage > 0) {
                 $scope.currentPage--;
                 $scope.loadTransactions();
             }
         };
-
         $scope.nextPage = function() {
             $scope.currentPage++;
             $scope.loadTransactions();
