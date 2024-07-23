@@ -58,10 +58,7 @@
                     </li>
                 </ul>
             </nav>
-            <div class="text-center">
-                <button class="btn btn-secondary" ng-click="previousPage()" ng-disabled="currentPage === 0">Previous</button>
-                <button class="btn btn-secondary" ng-click="nextPage()">Next</button>
-            </div>
+
             <div class="text-center mt-3">
                 <button class="btn btn-success" ng-click="openAddModal()">Add Transaction</button>
             </div>
@@ -125,7 +122,7 @@
                     </div>
                     <div class="form-group">
                         <label for="transactionDate">Date:</label>
-                        <input type="date" class="form-control" id="transactionDate" ng-model="selectedTransaction.transactionDate">
+                        <input type="text" class="form-control" id="transactionDate" ng-model="selectedTransaction.transactionDate" placeholder="MM/DD/YYYY">
                     </div>
                 </form>
             </div>
@@ -220,6 +217,7 @@
                 $scope.loadTransactions();
             }
         };
+
         $scope.nextPage = function() {
             $scope.currentPage++;
             $scope.loadTransactions();
@@ -250,10 +248,30 @@
 
         $scope.openUpdateModal = function(item) {
             $scope.selectedTransaction = angular.copy(item);
+
+            // Ensure the date is formatted as MM/DD/YYYY for display
+            if ($scope.selectedTransaction.transactionDate) {
+                var date = new Date($scope.selectedTransaction.transactionDate);
+                var formattedDate = ("0" + (date.getMonth() + 1)).slice(-2) + '/' +
+                    ("0" + date.getDate()).slice(-2) + '/' +
+                    date.getFullYear();
+                $scope.selectedTransaction.transactionDate = formattedDate;
+            }
+
             $('#updateTransactionModal').modal('show');
         };
 
+        // Function to reformat date to server-expected format
+        $scope.formatDateForUpdate = function(dateStr) {
+            var parts = dateStr.split('/');
+            return parts[2] + '-' + parts[0] + '-' + parts[1];  // YYYY-MM-DD
+        };
+
         $scope.updateTransaction = function() {
+            if ($scope.selectedTransaction.transactionDate) {
+                $scope.selectedTransaction.transactionDate = $scope.formatDateForUpdate($scope.selectedTransaction.transactionDate);
+            }
+
             $http.put('/transaction/update/' + $scope.selectedTransaction.id, $scope.selectedTransaction).then(function(response) {
                 if (response.status === 200) {
                     $('#updateTransactionModal').modal('hide');
@@ -277,6 +295,7 @@
             }
         };
     });
+
 </script>
 </body>
 </html>
